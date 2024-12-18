@@ -1,0 +1,145 @@
+import random
+
+def calculate_profit(investment, rate):
+    return investment * rate / 100
+
+def calculate_loss(investment):
+    return investment * 0.5
+
+def display_investment_options(options):
+    print("\nHere are the available investment options:")
+    for key, value in options.items():
+        print(f"{key}. {value['name']}")
+
+def display_products(products):
+    print("Here are the recommended products based on risk and return:")
+    for idx, product in enumerate(products):
+        print(
+            f"{idx + 1}. {product['name']} (Risk: {product['risk']}, Expected Return: {product['expected_return']}%, Potential Loss Chance: {product['loss_chance'] * 100}%)")
+
+def risk_assessment():
+    print("\nWelcome to the risk assessment section! Please answer the following questions:")
+    risk_score = 0
+
+    q1 = input("Do you prefer (a) stable returns or (b) high returns with high risk: ").lower()
+    if q1 == 'b':
+        risk_score += 1
+    else:
+        risk_score += 0
+    q2 = input("Can you accept short-term losses? (a) No (b) Yes: ").lower()
+    if q2 == 'b':
+        risk_score += 1
+    else:
+        risk_score += 0
+    q3 = input("What is the primary goal of your investment? (a) Capital preservation (b) Rapid growth: ").lower()
+    if q3 == 'b':
+        risk_score += 1
+    else:
+        risk_score += 0
+    if risk_score <= 1:
+        return "Low"
+    elif risk_score == 2:
+        return "Medium"
+    else:
+        return "High"
+
+def main():
+    print("Welcome to the Financial Assistant!")
+
+    # User input for initial amount
+    total_amount = float(input("Please enter the amount you currently hold (Unit: Dollar): "))
+    invest_history = []
+
+    # Define investment options and corresponding recommended products
+    investment_options = {
+        "1": {"name": "Stocks", "products": [
+            {"name": "Technology Stocks", "risk": "High", "expected_return": 15, "loss_chance": 0.2},
+            {"name": "Blue-Chip Stocks", "risk": "Medium", "expected_return": 8, "loss_chance": 0.1}
+        ]},
+        "2": {"name": "Bonds", "products": [
+            {"name": "Government Bonds", "risk": "Low", "expected_return": 3, "loss_chance": 0.01},
+            {"name": "Corporate Bonds", "risk": "Medium", "expected_return": 6, "loss_chance": 0.05}
+        ]},
+        "3": {"name": "Futures", "products": [
+            {"name": "Crude Oil Futures", "risk": "High", "expected_return": 20, "loss_chance": 0.25},
+            {"name": "Gold Futures", "risk": "Medium", "expected_return": 10, "loss_chance": 0.15}
+        ]},
+        "4": {"name": "Deposits", "products": [
+            {"name": "Bank Deposits", "risk": "Very Low", "expected_return": 2, "loss_chance": 0},
+            {"name": "Yu'ebao", "risk": "Low", "expected_return": 3, "loss_chance": 0}
+        ]}
+    }
+
+    # Introduce risk assessment
+    user_risk_preference = risk_assessment()
+    print(f"Based on your risk assessment result, your risk preference is: {user_risk_preference}\n")
+
+    # Start the investment selection loop
+    while True:
+        display_investment_options(investment_options)
+
+        # User selects an investment option
+        choice = input("Please choose an investment option (enter the number or type 'exit' to finish): ")
+        if choice.lower() == "exit":
+            print("\nThank you for using the Financial Assistant! Here is your investment record:")
+            for record in invest_history:
+                print(record)
+            print(f"\nYour final total amount is: {total_amount:.2f} Dollar. Goodbye!")
+            break
+
+        if choice not in investment_options:
+            print("Invalid choice, please try again!")
+            continue
+
+        selected_option = investment_options[choice]
+        print(f"\nYou selected the investment option: {selected_option['name']}")
+        display_products(selected_option['products'])
+
+        # User selects a product
+        try:
+            product_choice = int(input("Please choose a product (enter the number): ")) - 1
+            if product_choice < 0 or product_choice >= len(selected_option['products']):
+                raise ValueError("Invalid choice")
+        except ValueError:
+            print("Invalid choice, please restart the investment selection.")
+            continue
+
+        selected_product = selected_option['products'][product_choice]
+        print(
+            f"\nYou selected: {selected_product['name']} (Risk: {selected_product['risk']}, Expected Return: {selected_product['expected_return']}%)")
+
+        # User inputs investment amount
+        try:
+            invest_amount = float(input("Please enter the amount you want to invest (Unit: Dollar): "))
+            if invest_amount > total_amount or invest_amount <= 0:
+                raise ValueError("Insufficient amount or invalid input")
+        except ValueError:
+            print("Invalid input, please try again.")
+            continue
+
+        # Calculate investment results
+        loss_occurred = random.random() < selected_product['loss_chance']
+        if loss_occurred:
+            loss_amount = calculate_loss(invest_amount)
+            total_amount -= loss_amount
+            invest_history.append(f"{selected_product['name']} - Loss of {loss_amount:.2f} Dollar")
+            print(
+                f"\nUnfortunately! Due to market fluctuations, you lost: {loss_amount:.2f} Dollar. Your current total amount is: {total_amount:.2f} Dollar.")
+        else:
+            profit = calculate_profit(invest_amount, selected_product['expected_return'])
+            total_amount += profit
+            invest_history.append(f"{selected_product['name']} - Profit of {profit:.2f} Dollar")
+            print(
+                f"\nCongratulations! Your expected profit is: {profit:.2f} Dollar, and your total amount after investment is: {total_amount:.2f} Dollar.")
+
+        # Ask if the user wants to continue investing
+        continue_choice = input("Do you want to continue investing? (Type 'yes' to continue or 'exit' to finish): ")
+        if continue_choice.lower() != "yes":
+            print("\nThank you for using the Financial Assistant! Here is your investment record:")
+            for record in invest_history:
+                print(record)
+            print(f"\nYour final total amount is: {total_amount:.2f} Dollar. Goodbye!")
+            break
+
+if __name__ == "__main__":
+    main()
